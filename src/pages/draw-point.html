@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>动态绘制点</title>
+</head>
+<body>
+  <!-- 着色器里的代码要加分号 -->
+  <!-- 顶点着色器 -->
+  <!-- 告诉 GPU 在裁剪坐标系的圆点（也就是屏幕中心）画一个大小为 10 的点 -->
+  <script type="shader-source" id="vertexShader">
+    void main() {
+      // 声明顶点位置
+      gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+      // 声明要绘制的点的大小
+      gl_PointSize = 10.0;
+    }
+  </script>
+
+  <!-- 片元着色器 -->
+  <!-- 顶点着色器中的数据经过图元装配和光栅化之后，来到了片元着色器 -->
+  <!-- 片元着色器通知 GPU 将光栅化后的像素渲染成红色 -->
+  <script type="shader-source" id="fragmentShader">
+    void main() {
+      // 设置像素颜色为红色
+      gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    }
+  </script>
+
+  <script>
+    const canvas = document.createElement('canvas')
+    document.querySelector('body').appendChild(canvas)
+    // 在某些浏览器中，加上实验前缀做兼容处理
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
+
+    // 获取顶点着色器源码
+    const vertexShaderSource = document.querySelector('#vertexShader').innerHTML
+    // 创建顶点着色器对象
+    const vertexShader = gl.createShader(gl.VERTEX_SHADER)
+    // 将源码分配给顶点着色器对象
+    gl.shaderSource(vertexShader, vertexShaderSource)
+    // 编译顶点着色器程序
+    gl.compileShader(vertexShader)
+
+    // 获取片元着色器源码
+    const fragmentShaderSource = document.querySelector('#fragmentShader').innerHTML
+    // 创建片元着色器对象
+    const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)
+    // 将源码分配给片元着色器对象
+    gl.shaderSource(fragmentShader, fragmentShaderSource)
+    // 编译片元着色器
+    gl.compileShader(fragmentShader)
+
+    // 创建着色器程序
+    const program = gl.createProgram()
+    // 将顶点着色器挂载在着色器程序上
+    gl.attachShader(program, vertexShader)
+    // 将片元着色器挂载在着色器程序上
+    gl.attachShader(program, fragmentShader)
+    // 链接着色器程序
+    gl.linkProgram(program)
+
+    let success = gl.getProgramParameter(program, gl.LINK_STATUS);
+    if (success) {
+      // 启用创建好的着色器程序
+      gl.useProgram(program)
+
+      // 设置清空画布所用颜色为黑色
+      gl.clearColor(0.0, 0.0, 0.0, 1.0)
+      // 用上一步设置的清空画布颜色清空画布
+      gl.clear(gl.COLOR_BUFFER_BIT)
+
+      // 绘制点
+      gl.drawArrays(gl.POINTS, 0, 1)
+    } else {
+      console.error(gl.getProgramInfoLog(program))
+    }
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>动态绘制点</title>
+</head>
+<body>
+  <!-- 着色器里的代码要加分号 -->
+  <!-- 顶点着色器 -->
+  <script type="shader-source" id="vertexShader">
+    void main() {
+      // 声明顶点位置
+      gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+      // 声明要绘制的点的大小
+      gl_PointSize = 10.0;
+    }
+  </script>
+
+  <!-- 片元着色器 -->
+  <script type="shader-source" id="fragmentShader">
+    void main() {
+      // 设置像素颜色为红色
+      gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    }
+  </script>
+
+  <canvas id="canvas"></canvas>
+
+  <script type="module">
+    import { getCanvas, getWebGLContext, createShaderFromScript, createProgram } from '../utils/webgl-helper.js'
+    //获取canvas
+    const canvas = getCanvas('#canvas')
+
+    //获取webgl绘图环境
+    const gl = getWebGLContext(canvas)
+
+    //创建顶点着色器
+    const vertexShader = createShaderFromScript(gl, gl.VERTEX_SHADER,'vertexShader')
+    //创建片元着色器
+    const fragmentShader = createShaderFromScript(gl, gl.FRAGMENT_SHADER,'fragmentShader')
+
+    //创建着色器程序
+    const program = createProgram(gl ,vertexShader, fragmentShader)
+    //告诉 WebGL 运行哪个着色器程序
+    gl.useProgram(program)
+
+    //设置清空画布颜色为黑色。
+    gl.clearColor(0.0, 0.0, 0.0, 1.0)
+    //用上一步设置的清空画布颜色清空画布。
+    gl.clear(gl.COLOR_BUFFER_BIT)
+    //绘制点
+    gl.drawArrays(gl.POINTS, 0, 1)
+
+  </script>
+</body>
+</html>

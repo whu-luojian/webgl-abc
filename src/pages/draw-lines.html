@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>线段绘制</title>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script type="shader-source" id="vertexShader">
+    precision mediump float;
+    attribute vec2 a_Position;
+    attribute vec2 a_Screen_Size;
+    void main() {
+      vec2 position = (a_Position / a_Screen_Size) * 2.0 - 1.0;
+      position = position * vec2(1.0, -1.0);
+      gl_Position = vec4(position, 0.0, 1.0);
+      gl_PointSize = 10.0;
+    }
+  </script>
+  <script type="shader-source" id="fragmentShader">
+    precision mediump float;
+    uniform vec4 u_Color;
+    void main() {
+      vec4 color = u_Color / vec4(255, 255, 255, 1);
+      gl_FragColor = color;
+    }
+  </script>
+
+  <script type="module">
+    import { getCanvas, resizeCanvas, getWebGLContext, createShaderFromScript, createProgram } from '../utils/webgl-helper.js'
+    
+    const canvas = getCanvas('#canvas')
+    resizeCanvas(canvas)
+
+    const gl = getWebGLContext(canvas)
+    const vertexShader = createShaderFromScript(gl, gl.VERTEX_SHADER, 'vertexShader')
+    const fragmentShader = createShaderFromScript(gl, gl.FRAGMENT_SHADER, 'fragmentShader')
+    const program = createProgram(gl, vertexShader, fragmentShader)
+    gl.useProgram(program)
+
+    let a_Position = gl.getAttribLocation(program, 'a_Position')
+    let a_Screen_Size = gl.getAttribLocation(program, 'a_Screen_Size')
+    let u_Color = gl.getUniformLocation(program, 'u_Color')
+    gl.vertexAttrib2f(a_Screen_Size, canvas.width, canvas.height)
+    gl.uniform4f(u_Color, 255, 0, 0, 1)
+
+    let buffer = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0)
+    gl.enableVertexAttribArray(a_Position)            
+
+    const positions = []
+    canvas.addEventListener('mouseup', e => {
+      positions.push(e.pageX, e.pageY)
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW)
+      gl.clear(gl.COLOR_BUFFER_BIT)
+      gl.drawArrays(gl.LINE_LOOP, 0, positions.length / 2)
+    })
+
+    gl.clearColor(0.0, 0.0, 0.0, 1.0)
+    gl.clear(gl.COLOR_BUFFER_BIT)
+  </script>
+
+</body>
+</html>
